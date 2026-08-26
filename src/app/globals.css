@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+/* Overtime brand palette (spec §13) */
+@theme {
+  --color-navy: #1b2130;
+  --color-navy-soft: #262e42;
+  --color-gold: #c9a227;
+  --color-gold-soft: #e3c766;
+  --color-slate: #4a5568;
+  --color-ivory: #ede8dd;
+  --color-ivory-soft: #f6f3ec;
+
+  --font-sans: "IBM Plex Sans Arabic", "Segoe UI", "Helvetica Neue", Tahoma,
+    Arial, sans-serif;
+}
+
+body {
+  background: var(--color-ivory-soft);
+  color: var(--color-navy);
+  font-family: var(--font-sans);
+  font-weight: 400;
+}
+
+/* Brand rule: only two weights — 400 regular, 500 emphasis. */
+h1,
+h2,
+h3,
+h4,
+strong,
+b,
+th,
+button,
+.font-medium,
+.font-semibold,
+.font-bold {
+  font-weight: 500;
+}
+
+input,
+textarea,
+select {
+  background: #fff;
+}

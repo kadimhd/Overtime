@@ -1,0 +1,264 @@
+// Overtime — data model
+// SQLite for local development; designed to port to PostgreSQL unchanged
+// (no SQLite-specific types; enums modeled as string constants in src/lib/enums.ts
+// because SQLite lacks native enums).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  role          String // CLIENT | PROVIDER | ADMIN
+  phone         String?  @unique // Qatari phone, +974...
+  email         String?  @unique
+  name          String
+  businessType  String? // client onboarding answer
+  teamSize      String? // client onboarding answer
+  timeSink      String? // client onboarding: "what eats most of your time"
+  locale        String   @default("ar")
+  createdAt     DateTime @default(now())
+
+  providerProfile ProviderProfile?
+  tasksPosted     Task[]           @relation("ClientTasks")
+  offers          Offer[]
+  subscriptions   Subscription[]
+  messages        Message[]
+  reviewsGiven    Review[]         @relation("ReviewsGiven")
+  reviewsReceived Review[]         @relation("ReviewsReceived")
+  payments        Payment[]
+  disputesOpened  Dispute[]        @relation("DisputesOpened")
+  withdrawals     Withdrawal[]
+  sessions        Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  target    String // phone or email
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model ProviderProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  headline     String   @default("")
+  bio          String   @default("")
+  skills       String   @default("") // comma-separated
+  hourlyRate   Int? // QAR
+  hoursPerWeek Int      @default(20)
+  portfolio    String   @default("") // newline-separated links/work samples
+  verified     Boolean  @default(false) // "موثّق" badge
+  verification VerificationRequest?
+  categories   ProviderCategory[]
+}
+
+model VerificationRequest {
+  id         String   @id @default(cuid())
+  providerId String   @unique
+  provider   ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  status     String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  documents  String   @default("") // newline-separated document names (uploads out of MVP scope)
+  note       String   @default("")
+  createdAt  DateTime @default(now())
+  reviewedAt DateTime?
+}
+
+model Category {
+  id        String  @id @default(cuid())
+  slug      String  @unique
+  nameAr    String
+  nameEn    String
+  descAr    String  @default("")
+  descEn    String  @default("")
+  active    Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  tasks     Task[]
+  packages  Package[]
+  providers ProviderCategory[]
+}
+
+model ProviderCategory {
+  providerId String
+  categoryId String
+  provider   ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  category   Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([providerId, categoryId])
+}
+
+model Task {
+  id          String    @id @default(cuid())
+  clientId    String
+  client      User      @relation("ClientTasks", fields: [clientId], references: [id])
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id])
+  title       String
+  description String
+  budget      Int // QAR, client's proposed budget
+  deadline    DateTime
+  status      String    @default("OPEN") // OPEN | IN_PROGRESS | DELIVERED | COMPLETED | CANCELLED | DISPUTED
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  offers   Offer[]
+  contract Contract?
+  messages Message[]
+  reviews  Review[]
+  dispute  Dispute?
+}
+
+model Offer {
+  id         String   @id @default(cuid())
+  taskId     String
+  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  providerId String
+  provider   User     @relation(fields: [providerId], references: [id])
+  price      Int // QAR
+  days       Int // delivery time in days
+  message    String
+  status     String   @default("PENDING") // PENDING | ACCEPTED | REJECTED | WITHDRAWN
+  createdAt  DateTime @default(now())
+
+  contract Contract?
+
+  @@unique([taskId, providerId])
+}
+
+// A contract snapshot is generated from the active ContractTemplate when an
+// offer is accepted, so later template edits (e.g. after the executive
+// regulations of Law 9/2026 are issued) never mutate signed contracts.
+model Contract {
+  id         String   @id @default(cuid())
+  taskId     String   @unique
+  task       Task     @relation(fields: [taskId], references: [id])
+  offerId    String   @unique
+  offer      Offer    @relation(fields: [offerId], references: [id])
+  templateId String
+  body       String // rendered snapshot at acceptance time
+  createdAt  DateTime @default(now())
+}
+
+// Editable from the admin panel without code changes (spec §7).
+model ContractTemplate {
+  id        String   @id @default(cuid())
+  name      String
+  bodyAr    String
+  bodyEn    String
+  active    Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+}
+
+// Escrow ledger. Money is never held by Overtime directly: each payment row
+// mirrors a hold/capture/refund at a QCB-licensed gateway (Dibsy/Fatora/...)
+// via src/lib/payments (spec §7).
+model Payment {
+  id             String    @id @default(cuid())
+  userId         String // paying client
+  user           User      @relation(fields: [userId], references: [id])
+  taskId         String?
+  subscriptionId String?
+  amount         Int // QAR
+  commission     Int       @default(0) // platform commission, QAR
+  kind           String // TASK_ESCROW | SUBSCRIPTION
+  status         String // HELD | RELEASED | REFUNDED | FAILED
+  gateway        String // MOCK | DIBSY | FATORA
+  gatewayRef     String    @default("")
+  createdAt      DateTime  @default(now())
+  releasedAt     DateTime?
+}
+
+model Package {
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+  nameAr     String
+  nameEn     String
+  descAr     String   @default("")
+  descEn     String   @default("")
+  hoursPerMonth Int
+  priceMonthly  Int // QAR
+  tier       String   @default("BASIC") // BASIC | GROWTH | FULL
+  active     Boolean  @default(true)
+
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id         String    @id @default(cuid())
+  clientId   String
+  client     User      @relation(fields: [clientId], references: [id])
+  packageId  String
+  package    Package   @relation(fields: [packageId], references: [id])
+  providerId String? // matched provider (userId), nullable until matched
+  status     String    @default("ACTIVE") // ACTIVE | PAUSED | CANCELLED
+  hoursUsed  Int       @default(0)
+  startedAt  DateTime  @default(now())
+  renewsAt   DateTime
+  cancelledAt DateTime?
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id])
+  body      String
+  kind      String   @default("TEXT") // TEXT | ATTACHMENT | STATUS
+  createdAt DateTime @default(now())
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  taskId     String
+  task       Task     @relation(fields: [taskId], references: [id])
+  reviewerId String
+  reviewer   User     @relation("ReviewsGiven", fields: [reviewerId], references: [id])
+  revieweeId String
+  reviewee   User     @relation("ReviewsReceived", fields: [revieweeId], references: [id])
+  rating     Int // 1..5
+  comment    String   @default("")
+  createdAt  DateTime @default(now())
+
+  @@unique([taskId, reviewerId])
+}
+
+model Dispute {
+  id        String    @id @default(cuid())
+  taskId    String    @unique
+  task      Task      @relation(fields: [taskId], references: [id])
+  openerId  String
+  opener    User      @relation("DisputesOpened", fields: [openerId], references: [id])
+  reason    String
+  status    String    @default("OPEN") // OPEN | RESOLVED_RELEASE | RESOLVED_REFUND
+  adminNote String    @default("")
+  createdAt DateTime  @default(now())
+  resolvedAt DateTime?
+}
+
+model Withdrawal {
+  id         String   @id @default(cuid())
+  providerId String
+  provider   User     @relation(fields: [providerId], references: [id])
+  amount     Int // QAR
+  status     String   @default("REQUESTED") // REQUESTED | PAID
+  createdAt  DateTime @default(now())
+}
