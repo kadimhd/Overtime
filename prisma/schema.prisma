@@ -1,14 +1,14 @@
 // Overtime — data model
-// SQLite for local development; designed to port to PostgreSQL unchanged
-// (no SQLite-specific types; enums modeled as string constants in src/lib/enums.ts
-// because SQLite lacks native enums).
+// PostgreSQL. Enums are modeled as string constants in src/lib/enums.ts
+// rather than native Prisma enums, so switching databases needs no schema
+// changes beyond the datasource itself.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

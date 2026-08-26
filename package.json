@@ -10,7 +10,8 @@
     "db:push": "prisma db push",
     "db:seed": "node prisma/seed.mjs",
     "postinstall": "prisma generate",
-    "e2e": "node scripts/e2e-smoke.mjs"
+    "e2e": "node scripts/e2e-smoke.mjs",
+    "vercel-build": "prisma db push --skip-generate --accept-data-loss && node prisma/seed.mjs && next build"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
