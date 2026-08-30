@@ -32,6 +32,50 @@ async function main() {
       descEn: "Social media management, brand design, content writing.",
       sortOrder: 2,
     },
+    // Phase 2 categories (spec §10: قانوني بسيط، تقني، ترجمة) — validated against
+    // 2026 market research on Qatar startup service demand; excludes anything
+    // requiring physical presence (company-formation/PRO government-office
+    // runs, cleaning, etc.), consistent with spec §2's fully-remote rule.
+    {
+      slug: "legal",
+      nameAr: "الاستشارات القانونية البسيطة",
+      nameEn: "Simple Legal Consulting",
+      descAr: "مراجعة عقود، استشارات قانونية أساسية، إرشادات امتثال — بدون تمثيل أمام المحاكم.",
+      descEn: "Contract review, basic legal advice, compliance guidance — no court representation.",
+      sortOrder: 3,
+    },
+    {
+      slug: "tech",
+      nameAr: "الدعم التقني وتطوير المواقع",
+      nameEn: "Tech & Web Support",
+      descAr: "بناء مواقع وتطبيقات بسيطة، دعم تقني عن بُعد، صيانة الأنظمة الرقمية.",
+      descEn: "Websites and simple apps, remote IT support, digital systems maintenance.",
+      sortOrder: 4,
+    },
+    {
+      slug: "translation",
+      nameAr: "الترجمة",
+      nameEn: "Translation",
+      descAr: "ترجمة مستندات ومحتوى بين العربية والإنجليزية.",
+      descEn: "Document and content translation between Arabic and English.",
+      sortOrder: 5,
+    },
+    {
+      slug: "hr-recruitment",
+      nameAr: "الموارد البشرية والتوظيف",
+      nameEn: "HR & Recruitment",
+      descAr: "فرز مرشحين وتوظيف عن بُعد، إعداد سياسات الموارد البشرية، إرشادات الرواتب (WPS).",
+      descEn: "Remote candidate sourcing and screening, HR policy setup, payroll (WPS) guidance.",
+      sortOrder: 6,
+    },
+    {
+      slug: "business-consulting",
+      nameAr: "استشارات الأعمال والتخطيط",
+      nameEn: "Business & Strategy Consulting",
+      descAr: "دراسات جدوى، خطط دخول السوق، استشارات نمو للشركات الصغيرة.",
+      descEn: "Feasibility studies, market-entry plans, growth advisory for small businesses.",
+      sortOrder: 7,
+    },
   ];
   const categories = {};
   for (const data of categoriesData) {
