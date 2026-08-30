@@ -76,6 +76,61 @@ async function main() {
       descEn: "Feasibility studies, market-entry plans, growth advisory for small businesses.",
       sortOrder: 7,
     },
+    // Granular creative/digital categories: a solopreneur's monthly workload
+    // rarely fits one broad "marketing" bucket — social, design, content,
+    // paid ads, video and web work are each hired and scheduled separately,
+    // which is also what makes them natural retainer-package building blocks
+    // (spec §5-ج). Kept alongside the broader "marketing"/"tech" categories
+    // rather than replacing them, since existing tasks/providers/packages
+    // already reference those by id.
+    {
+      slug: "social-media-management",
+      nameAr: "إدارة السوشيال ميديا",
+      nameEn: "Social Media Management",
+      descAr: "جدولة ونشر ومتابعة تفاعل يومي على المنصات — عمل دوري شهري.",
+      descEn: "Ongoing monthly content calendar, posting, and engagement across platforms.",
+      sortOrder: 8,
+    },
+    {
+      slug: "graphic-design",
+      nameAr: "التصميم الجرافيكي والهوية البصرية",
+      nameEn: "Graphic Design & Branding",
+      descAr: "شعارات، تصاميم سوشيال ميديا، مواد تسويقية مطبوعة ورقمية.",
+      descEn: "Logos, social media graphics, print and digital marketing materials.",
+      sortOrder: 9,
+    },
+    {
+      slug: "content-writing",
+      nameAr: "كتابة المحتوى والنصوص التسويقية",
+      nameEn: "Content Writing & Copywriting",
+      descAr: "مقالات، أوصاف منتجات، نصوص إعلانية بالعربية والإنجليزية.",
+      descEn: "Articles, product descriptions, ad copy in Arabic and English.",
+      sortOrder: 10,
+    },
+    {
+      slug: "paid-ads",
+      nameAr: "الإعلانات الممولة والتسويق الرقمي",
+      nameEn: "Paid Ads & Digital Marketing",
+      descAr: "إدارة حملات إعلانية على Google وInstagram وTikTok، تحسين الأداء والميزانية.",
+      descEn: "Campaign management on Google, Instagram, and TikTok; budget and performance optimization.",
+      sortOrder: 11,
+    },
+    {
+      slug: "video-photo",
+      nameAr: "تحرير الفيديو والتصوير",
+      nameEn: "Video & Photo Editing",
+      descAr: "مونتاج فيديوهات Reels وTikTok، تحرير صور المنتجات.",
+      descEn: "Reels/TikTok video editing, product photo editing.",
+      sortOrder: 12,
+    },
+    {
+      slug: "web-development",
+      nameAr: "تطوير وصيانة المواقع الإلكترونية",
+      nameEn: "Website Development & Maintenance",
+      descAr: "بناء وتحديث مواقع ومتاجر إلكترونية، تعديلات دورية شهرية.",
+      descEn: "Building and updating websites and online stores; ongoing monthly changes.",
+      sortOrder: 13,
+    },
   ];
   const categories = {};
   for (const data of categoriesData) {
@@ -120,6 +175,33 @@ async function main() {
       hoursPerMonth: 25,
       priceMonthly: 3900,
       tier: "FULL",
+    },
+    {
+      slug: "social-starter",
+      categoryId: categories["social-media-management"].id,
+      nameAr: "سوشيال ميديا أساسي",
+      nameEn: "Social Media Starter",
+      descAr: "8 ساعات شهرياً: جدولة ونشر أسبوعي + رد على التعليقات والرسائل.",
+      descEn: "8 hours/month: weekly content scheduling and posting, plus comment/DM replies.",
+      hoursPerMonth: 8,
+      priceMonthly: 1100,
+      tier: "BASIC",
+    },
+    // Bundles social, design, content and web work into one retainer — the
+    // direct answer to a solopreneur needing several creative/digital
+    // services every month instead of hiring each separately.
+    {
+      slug: "marketing-design-pod",
+      categoryId: null,
+      nameAr: "فريق التسويق والتصميم",
+      nameEn: "Marketing & Design Pod",
+      descAr:
+        "سوشيال ميديا + تصميم + كتابة محتوى + تحديثات الموقع، 18 ساعة شهرياً موزعة حسب حاجتك.",
+      descEn:
+        "Social media + design + content writing + website updates, 18 hours/month split as you need.",
+      hoursPerMonth: 18,
+      priceMonthly: 2600,
+      tier: "GROWTH",
     },
   ];
   for (const data of packagesData) {
